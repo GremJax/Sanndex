@@ -1,0 +1,6 @@
+# Ignore SQLTools session files
+database/.sql_sessions/
+*.sqltools-session
+
+# Environment variables
+.env

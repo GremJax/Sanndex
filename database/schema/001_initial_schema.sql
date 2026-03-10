@@ -34,6 +34,7 @@ CREATE TABLE reviews (
   source_id INTEGER REFERENCES sources(id),
   status TEXT DEFAULT 'pending',
   num INTEGER DEFAULT 1,
+  score_type TEXT DEFAULT 'scored',
 
   accuracy_score INTEGER DEFAULT 50,
   transparency_score INTEGER DEFAULT 50,
@@ -41,7 +42,6 @@ CREATE TABLE reviews (
   manipulation_score INTEGER DEFAULT 50,
   authenticity_score INTEGER DEFAULT 50,
   credibility_score INTEGER DEFAULT 50,
-  total_score INTEGER DEFAULT 50,
 
   created_at TIMESTAMP DEFAULT NOW()
 );

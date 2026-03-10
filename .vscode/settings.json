@@ -10,6 +10,22 @@
             "name": "Veridex Local",
             "database": "veridex",
             "username": "postgres"
+        },
+        {
+            "pgOptions": {
+                "ssl": {
+                    "rejectUnauthorized": true
+                }
+            },
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "sshOptions": {
+                "port": 22
+            },
+            "server": "localhost",
+            "driver": "PostgreSQL",
+            "name": "sanndex",
+            "connectString": "postgresql://sanndex_i9yt_user:78mUzlEHgZAmSzcZrTZNhY7rRwemI2E8@dpg-d6nsakf5gffc7383hr8g-a.oregon-postgres.render.com/sanndex_i9yt"
         }
     ]
 }

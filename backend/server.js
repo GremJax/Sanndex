@@ -116,6 +116,18 @@ async function getSourceIdByDomain(domain) {
   return sourceRes.rows[0].source_id;
 }
 
+async function getSourceBySourceId(sourceId) {
+  if (!sourceId) return null;
+
+  // Query database for reviews
+  const sourceRes = await pool.query(
+    `SELECT * FROM sources WHERE id = $1`,
+    [sourceId]
+  );
+
+  return sourceRes.rows[0];
+}
+
 async function getReviewBySourceId(sourceId) {
   if (!sourceId) return null;
 
@@ -153,6 +165,9 @@ app.get("/source", async (req, res) => {
       return res.status(404).json({ error: "No source found for that domain" });
     }
 
+    // Get the account information
+    const source = await getSourceBySourceId(sourceId);
+
     // Get the top review
     const topReview = await getReviewBySourceId(sourceId);
 
@@ -160,23 +175,16 @@ app.get("/source", async (req, res) => {
       return res.status(404).json({ error: "No reviews found for this source" });
     }
 
-    res.json(topReview);
+    res.json({
+      source: source,
+      review: topReview
+    });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Internal server error" });
   }
 })
-
-async function init() {
-  const sourceId = await getSourceIdByName("nuxanor");
-  if (sourceId) {
-    await insertDomainBySourceId(sourceId, "youtube/nuxanor");
-  } else {
-    console.log("Nuxanor not found")
-  }
-}
-
-//init();
 
 const PORT = process.env.PORT || 3000;
 

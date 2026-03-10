@@ -7,31 +7,46 @@ function normalizeDomain(url) {
   return window.location.hostname.replace(/^www\./, '');
 }
 
+function getTotalScore(data) {
+    return (data.accuracy_score + 
+        data.transparency_score + 
+        data.integrity_score +
+        data.manipulation_score +
+        data.authenticity_score +
+        data.credibility_score) / 6
+}
+
 // Get proper icon
 function chooseIcon(data) {
     if (!data || data.error) return "unrated.svg";
 
+    if (data.score_type == "gold_star") return "gold_star.svg";
+    if (data.score_type == "na") {
+        if (data.status == "ai_generated") return "na_ai.svg";
+        else return "na.svg";
+    }
+
     switch (data.status) {
         case "pending": return "under_review.svg";
-        case "gold_star": return "gold_star.svg";
         case "ai_generated": {
-            if (data.total_score == null) return "na_ai.svg";
-            if (data.total_score >= 80) return "good_ai.svg";
-            if (data.total_score >= 60) return "questionable_ai.svg";
-            if (data.total_score >= 40) return "unreliable_ai.svg";
+            const totalScore = getTotalScore(data);
+            if (totalScore >= 80) return "good_ai.svg";
+            if (totalScore >= 60) return "questionable_ai.svg";
+            if (totalScore >= 40) return "unreliable_ai.svg";
             return "misleading_ai.svg";
         }
         case "verified": {
-            if (data.total_score >= 80) return "good_verified.svg";
-            if (data.total_score >= 60) return "questionable_verified.svg";
-            if (data.total_score >= 40) return "unreliable_verified.svg";
+            const totalScore = getTotalScore(data);
+            if (totalScore >= 80) return "good_verified.svg";
+            if (totalScore >= 60) return "questionable_verified.svg";
+            if (totalScore >= 40) return "unreliable_verified.svg";
             return "misleading_verified.svg";
         }
         default: {
-            if (data.total_score == null) return "na.svg";
-            if (data.total_score >= 80) return "good.svg";
-            if (data.total_score >= 60) return "questionable.svg";
-            if (data.total_score >= 40) return "unreliable.svg";
+            const totalScore = getTotalScore(data);
+            if (totalScore >= 80) return "good.svg";
+            if (totalScore >= 60) return "questionable.svg";
+            if (totalScore >= 40) return "unreliable.svg";
             return "misleading.svg";
         }
     }
@@ -40,11 +55,12 @@ function chooseIcon(data) {
 function chooseTitle(data) {
     if (!data || data.error) return "No Sanndex rating";
     if (data.status == "verified") return "Sanndex rating is pending";
-    if (data.status == "gold_star") return "Sanndex rating: Exemplary";
-    if (data.total_score == null) return "Sanndex rating is not applicable";
-    if (data.total_score >= 80) return "Sanndex rating: Good";
-    if (data.total_score >= 60) return "Sanndex rating: Questionable";
-    if (data.total_score >= 40) return "Sanndex rating: Unreliable";
+    if (data.score_type == "gold_star") return "Sanndex rating: Exemplary";
+    if (data.score_type == "na") return "Sanndex rating is not needed";
+    const totalScore = getTotalScore(data);
+    if (totalScore >= 80) return "Sanndex rating: Good";
+    if (totalScore >= 60) return "Sanndex rating: Questionable";
+    if (totalScore >= 40) return "Sanndex rating: Unreliable";
     return "Sanndex rating: Misleading";
 }
 
@@ -102,20 +118,8 @@ function findNameElements() {
                     size: 20
                 });
             }
-
-            // Shorts page
-            const reelChannel = document.querySelector('a[href^="/@"]');
-            if (reelChannel && !reelChannel.dataset.sanndex) {
-                reelChannel.dataset.sanndex = "true";
-                results.push({
-                    element: reelChannel,
-                    name: reelChannel.textContent.replace("@", "").trim(),
-                    domain: "youtube",
-                    size: 20
-                });
-            }
             
-            // Homepage
+            // Homepage and shorts
             document.querySelectorAll('a[href^="/@"]').forEach(el => {
                 if (!el || el.dataset.sanndex) return;
                 el.dataset.sanndex = "true";
@@ -123,7 +127,7 @@ function findNameElements() {
                 const handle = el.getAttribute("href")
                     .replace("/@", "")
                     .split("/")[0];
-                if (!handle) return;
+                if (!handle || handle.length == 0) return;
 
                 results.push({
                     element: el,
@@ -178,14 +182,14 @@ const observer = new MutationObserver(() => {
     results.forEach(result => {
         if (result) {
 
-            fetch(`http://localhost:3000/source?domain=${result.domain}/${result.name}`)
+            fetch(`https://sanndex.org/source?domain=${result.domain.toLowerCase()}/${result.name.toLowerCase()}`)
             .then(res => res.json())
             .then(data => {
-                insertBadge(result.element, result.size, data, result.name);
+                insertBadge(result.element, result.size, data.review, data.source.name);
             })
             .catch(err => {
                 insertBadge(result.element, result.size, null, result.name);
-                console.error("Sanndex fetch error:", err);
+                console.error(`Sanndex fetch error for ${result.name}:`, err);
             });
         }
     })

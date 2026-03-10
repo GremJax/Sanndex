@@ -66,6 +66,44 @@ async function getSourceIdByName(name) {
   return sourceRes.rows[0].id;
 }
 
+async function insertSourceWithDomain(name, domain) {
+  if (!domain || !name) return;
+
+  // Insert into sources
+  const result = await pool.query(
+    `INSERT INTO sources (name) VALUES ($1) RETURNING id`,
+    [name.toLowerCase()]
+  );
+  const sourceId = result.rows[0].id;
+
+  // Insert into source_domains
+  await insertDomainBySourceId(sourceId, domain);
+
+  return sourceId;
+}
+
+async function insertDomainBySourceId(sourceId, domain) {
+  if (!sourceId || !domain) return;
+
+  // Insert into source_domains
+  await pool.query(
+    `INSERT INTO source_domains (source_id, domain) VALUES ($1, $2)`,
+    [sourceId, domain.toLowerCase()]
+  );
+}
+
+async function getSourceIdByName(name) {
+  if (!name) return null;
+
+  const sourceRes = await pool.query(
+    `SELECT id FROM sources WHERE name = $1`,
+    [name.toLowerCase()]
+  );
+
+  if (sourceRes.rows.length === 0) return null; // no source found for that name
+  return sourceRes.rows[0].id;
+}
+
 async function getSourceIdByDomain(domain) {
   if (!domain) return null;
 

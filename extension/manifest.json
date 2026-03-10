@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Veridex",
+  "name": "Sanndex",
   "version": "0.1",
   "content_scripts": [
     {

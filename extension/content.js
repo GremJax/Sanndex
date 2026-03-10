@@ -1,4 +1,4 @@
-console.log("[Veridex] content script injected");
+console.log("[Sanndex] content script injected");
 
 // Get the current domain
 const domain = window.location.hostname.replace(/^www\./, '')
@@ -38,14 +38,14 @@ function chooseIcon(data) {
 }
 
 function chooseTitle(data) {
-    if (!data || data.error) return "No Veridex rating";
-    if (data.status == "verified") return "Veridex rating is pending";
-    if (data.status == "gold_star") return "Veridex rating: Exemplary";
-    if (data.total_score == null) return "Veridex rating is not applicable";
-    if (data.total_score >= 80) return "Veridex rating: Good";
-    if (data.total_score >= 60) return "Veridex rating: Questionable";
-    if (data.total_score >= 40) return "Veridex rating: Unreliable";
-    return "Veridex rating: Misleading";
+    if (!data || data.error) return "No Sanndex rating";
+    if (data.status == "verified") return "Sanndex rating is pending";
+    if (data.status == "gold_star") return "Sanndex rating: Exemplary";
+    if (data.total_score == null) return "Sanndex rating is not applicable";
+    if (data.total_score >= 80) return "Sanndex rating: Good";
+    if (data.total_score >= 60) return "Sanndex rating: Questionable";
+    if (data.total_score >= 40) return "Sanndex rating: Unreliable";
+    return "Sanndex rating: Misleading";
 }
 
 // Create and insert badge
@@ -58,7 +58,7 @@ function insertBadge(targetElement, size, data, name) {
 
   icon.title = chooseTitle(data);
 
-  icon.src = chrome.runtime.getURL(`icons/veridex_${iconName}`);
+  icon.src = chrome.runtime.getURL(`icons/sanndex_${iconName}`);
   icon.style.width = size_px;
   icon.style.height = size_px;
   icon.style.marginLeft = `${size/8}px`;
@@ -66,86 +66,130 @@ function insertBadge(targetElement, size, data, name) {
   icon.style.cursor = "pointer";
 
   icon.onclick = () => {
-    window.open(`https://veridex.example/review/${name}`, "_blank");
+    window.open(`https://sanndex.org/review/${name}`, "_blank");
   };
 
   targetElement.appendChild(icon);
 }
 
 // Domain-specific logic for finding the name element
-function findNameElement() {
+function findNameElements() {
+    const results = [];
+
     switch (normalizeDomain(domain)) {
-        case "youtube.com": {
+        case "youtube.com": 
+        case "youtu.be": {
             // Channel homepage
             const channelHeader = document.querySelector("h1.dynamicTextViewModelH1");
-            if (channelHeader) {
-                return {
+            if (channelHeader && !channelHeader.dataset.sanndex) {
+                channelHeader.dataset.sanndex = "true";
+                return [{
                     element: channelHeader,
-                    name: channelHeader.textContent.trim(),
+                    name: channelHeader.textContent.replace("@","").trim(),
+                    domain: "youtube",
                     size: 32
-                };
+                }];
             }
 
             // Video page
             const videoChannel = document.querySelector("ytd-channel-name");
-            if (videoChannel) {
-                return {
+            if (videoChannel && !videoChannel.dataset.sanndex) {
+                videoChannel.dataset.sanndex = "true";
+                results.push({
                     element: videoChannel,
-                    name: videoChannel.textContent.trim(),
+                    name: videoChannel.textContent.replace("@","").trim(),
+                    domain: "youtube",
                     size: 20
-                };
+                });
             }
 
             // Shorts page
             const reelChannel = document.querySelector('a[href^="/@"]');
-            if (reelChannel) {
-                return {
+            if (reelChannel && !reelChannel.dataset.sanndex) {
+                reelChannel.dataset.sanndex = "true";
+                results.push({
                     element: reelChannel,
                     name: reelChannel.textContent.replace("@", "").trim(),
+                    domain: "youtube",
                     size: 20
-                };
+                });
             }
+            
+            // Homepage
+            document.querySelectorAll('a[href^="/@"]').forEach(el => {
+                if (!el || el.dataset.sanndex) return;
+                el.dataset.sanndex = "true";
 
-            return null;
-        }
+                const handle = el.getAttribute("href")
+                    .replace("/@", "")
+                    .split("/")[0];
+                if (!handle) return;
 
-        case "x.com": {
-            const user = document.querySelector("div[data-testid='UserName']");
-            if (user) {
-                return {
-                    element: user,
-                    name: user.textContent.trim(),
-                    size: 32
-                };
-            }
-            return null;
+                results.push({
+                    element: el,
+                    name: handle,
+                    domain: "youtube",
+                    size: 20
+                });
+            });
         }
+        break;
+
+        case "x.com": 
+        case "twitter.com": {
+
+            // Homepage
+            document.querySelectorAll('[data-testid="User-Name"]').forEach(el => {
+                if (!el || el.dataset.sanndex) return;
+                el.dataset.sanndex = "true";
+
+                const handleLink = el.querySelector('a[href^="/"]');
+                if (!handleLink) return;
+
+                const handle = handleLink
+                    .getAttribute("href")
+                    .replace("/", "")
+                    .trim();
+
+                results.push({
+                    element: el,
+                    name: handle,
+                    domain: "x",
+                    size: 20
+                });
+            });
+        }
+        break;
 
         // Unsupported website
         default: {
-            console.log("Website is not supported by veridex");
-            return null;
+            console.log("Website is not supported by sanndex");
+            return [];
         }
     }
+
+    return results;
 }
 
 // Watch for dynamic content
 const observer = new MutationObserver(() => {
-    const result = findNameElement();
+    const results = findNameElements();
 
-    if (result && !result.element.dataset.veridex) {
-        result.element.dataset.veridex = "true"; // prevent duplicates
+    results.forEach(result => {
+        if (result) {
 
-        fetch(`http://localhost:3000/source?domain=${result.name}`)
-        .then(res => res.json())
-        .then(data => {
-            insertBadge(result.element, result.size, data, result.name);
-        })
-        .catch(err => {
-            insertBadge(result.element, result.size, null, result.name);
-            console.error("Veridex fetch error:", err);
-        });
-    }
+            fetch(`http://localhost:3000/source?domain=${result.domain}/${result.name}`)
+            .then(res => res.json())
+            .then(data => {
+                insertBadge(result.element, result.size, data, result.name);
+            })
+            .catch(err => {
+                insertBadge(result.element, result.size, null, result.name);
+                console.error("Sanndex fetch error:", err);
+            });
+        }
+    })
+    
 });
 
 observer.observe(document.body, { childList: true, subtree: true });

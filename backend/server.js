@@ -293,6 +293,7 @@ app.get("/source", async (req, res) => {
 
 // Post report
 app.post("/report", async (req, res) => {
+  console.log("REPORT BODY:", req.body);
 
   const { sourceId, userId, url, description, 
     accuracy_score,

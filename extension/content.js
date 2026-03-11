@@ -417,7 +417,10 @@ const observer = new MutationObserver(() => {
         if (result) {
 
             fetch(`https://sanndex.org/source?domain=${result.domain.toLowerCase()}/${result.name.toLowerCase()}`)
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json()
+            })
             .then(data => {
                 insertBadge(result.element, result.size, data.review, data.source.name, data.score);
             })

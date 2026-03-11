@@ -9,16 +9,65 @@ app.use(express.json())
 app.use(cors()); // allow all origins during dev
 app.use(express.static("public"));
 
-// basic limiter
+// limiter
 const limiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute window
-  max: 60,             // limit each IP to 60 requests per minute
+  max: 200,            // 200 req/min
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests. Slow down." }
 });
 
 app.use(limiter);
+
+// session
+const session = require("express-session");
+app.use(session({
+  name: "sanndex_session",
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    maxAge: 1000 * 60 * 60 * 24 * 30
+  }
+}));
+
+// passport
+const passport = require("passport");
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: "/auth/google/callback"
+  },
+  async (accessToken, refreshToken, profile, done) => {
+
+    const email = profile.emails[0].value;
+    const googleId = profile.id;
+
+    let user = await pool.query(
+      "SELECT * FROM users WHERE google_id=$1",
+      [googleId]
+    );
+
+    if (user.rows.length === 0) {
+      user = await pool.query(
+        `INSERT INTO users (google_id, email)
+         VALUES ($1,$2) RETURNING *`,
+        [googleId, email]
+      );
+    }
+
+    done(null, user.rows[0]);
+  }
+));
 
 // Database fetch
 const pool = new Pool({
@@ -161,6 +210,38 @@ function getTotalScore(data) {
   ) / 6
 }
 
+// Authenticate with Google
+app.get("/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+
+// Sign in with Google
+app.get("/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/" }),
+  (req, res) => {
+
+    req.session.userId = req.user.id;
+    res.redirect("/dashboard");
+  }
+);
+
+// Get User Id
+app.get("/me", (req, res) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: "Not logged in" });
+  }
+
+  res.json({ userId: req.session.userId });
+});
+
+// Logout
+app.post("/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.json({ success: true });
+  });
+});
+
+// Access source info
 app.get("/source", async (req, res) => {
   try {
     const domain = req.query.domain;

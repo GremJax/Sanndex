@@ -1,0 +1,2 @@
+ALTER TABLE users ADD email VARCHAR(255);
+ALTER TABLE users ALTER COLUMN reputation_score SET DEFAULT 0;

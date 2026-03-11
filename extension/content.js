@@ -57,25 +57,26 @@ function insertBadge(targetElement, size, data, name, totalScore) {
   const iconName = chooseIcon(data, totalScore);
 
   const icon = document.createElement("img");
-  const size_px = `${size}px`
 
   icon.title = chooseTitle(data, totalScore);
 
   icon.src = chrome.runtime.getURL(`icons/sanndex_${iconName}`);
-  icon.style.width = size_px;
-  icon.style.height = size_px;
+  icon.style.width = `${size}px`;
+  icon.style.height = `${size}px`;
   icon.style.marginLeft = `${size/8}px`;
   icon.style.verticalAlign = "middle";
   icon.style.cursor = "pointer";
 
-  icon.onclick = () => {
-    openSanndexPopup(data, name);
+  icon.onclick = (event) => {
+    event.stopPropagation();
+    event.preventDefault();
+    openSanndexPopup(data, name, event);
   };
 
   targetElement.appendChild(icon);
 }
 
-function openSanndexPopup(data, name) {
+function openSanndexPopup(data, name, event) {
     const overlay = document.createElement("div");
     overlay.style.position = "fixed";
     overlay.style.top = "0";
@@ -85,10 +86,13 @@ function openSanndexPopup(data, name) {
     overlay.style.background = "rgba(0,0,0,0.5)";
     overlay.style.zIndex = "999999";
 
+    const x = Math.min(event.clientX, window.innerWidth - 340);
+    const y = Math.min(event.clientY, window.innerHeight - 220);
+
     const popup = document.createElement("div");
-    popup.style.position = "absolute";
-    popup.style.top = "50%";
-    popup.style.left = "50%";
+    popup.style.position = "fixed";
+    popup.style.left = `${x}px`;
+    popup.style.top = `${y}px`;
     popup.style.transform = "translate(-50%, -50%)";
     popup.style.background = "white";
     popup.style.padding = "20px";
@@ -104,7 +108,7 @@ function openSanndexPopup(data, name) {
     nameEl.textContent = name;
 
     const score = document.createElement("p");
-    score.textContent = data ? `Score: ${getTotalScore(data)}` : "No rating yet";
+    score.textContent = data ? `Score: ${data.accuracy_score}` : "No rating yet";
 
     const siteButton = document.createElement("button");
     siteButton.textContent = "View Full Review";

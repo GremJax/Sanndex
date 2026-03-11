@@ -26,6 +26,12 @@ CREATE TABLE reports (
   status TEXT DEFAULT 'pending',
   evidence_url TEXT,
   description TEXT,
+  accuracy_score INTEGER DEFAULT 50,
+  transparency_score INTEGER DEFAULT 50,
+  integrity_score INTEGER DEFAULT 50,
+  manipulation_score INTEGER DEFAULT 50,
+  authenticity_score INTEGER DEFAULT 50,
+  credibility_score INTEGER DEFAULT 50,
   created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -35,14 +41,6 @@ CREATE TABLE reviews (
   status TEXT DEFAULT 'pending',
   num INTEGER DEFAULT 1,
   score_type TEXT DEFAULT 'scored',
-
-  accuracy_score INTEGER DEFAULT 50,
-  transparency_score INTEGER DEFAULT 50,
-  integrity_score INTEGER DEFAULT 50,
-  manipulation_score INTEGER DEFAULT 50,
-  authenticity_score INTEGER DEFAULT 50,
-  credibility_score INTEGER DEFAULT 50,
-
   created_at TIMESTAMP DEFAULT NOW()
 );
 

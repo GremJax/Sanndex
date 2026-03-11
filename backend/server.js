@@ -3,10 +3,12 @@ require('dotenv').config();
 const { Pool } = require("pg")
 const cors = require('cors');
 const rateLimit = require("express-rate-limit");
+const path = require("path");
 
 // HTML
 const app = express()
 app.use(express.json())
+app.use(express.static(path.join(__dirname, "../website")));
 
 // CORS
 app.use(cors({
@@ -17,9 +19,6 @@ app.use(cors({
   ],
   credentials: true
 }));
-
-// Static website
-app.use(express.static("public"));
 
 // limiter
 const limiter = rateLimit({
@@ -193,7 +192,6 @@ async function getSourceIdByDomain(domain) {
 async function getSourceBySourceId(sourceId) {
   if (!sourceId) return null;
 
-  // Query database for reviews
   const sourceRes = await pool.query(
     `SELECT * FROM sources WHERE id = $1`,
     [sourceId]
@@ -205,7 +203,6 @@ async function getSourceBySourceId(sourceId) {
 async function getReviewBySourceId(sourceId) {
   if (!sourceId) return null;
 
-  // Query database for reviews
   const reviewRes = await pool.query(
     `SELECT *
       FROM reviews
@@ -219,7 +216,6 @@ async function getReviewBySourceId(sourceId) {
     return null; // no reviews yet
   }
 
-  // Return found source
   return reviewRes.rows[0];
 }
 

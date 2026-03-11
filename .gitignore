@@ -1,4 +1,4 @@
-# Ignore SQLTools session files
+# SQLTools session files
 database/.sql_sessions/
 *.sqltools-session
 

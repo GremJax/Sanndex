@@ -177,28 +177,33 @@ function openReportPopup(data, name, event) {
     credibilitySlider.style.width = "100%";
 
     // Fetch report info
-    const url = domain;
-
     let currentUserId = null;
+    let username = "anon";
     fetch("https://sanndex.org/me", {
         credentials: "include"
     })
     .then(res => res.json())
     .then(data => {
         currentUserId = data.userId;
+        username = data.userInfo.username;
     });
+
+    const userLabel = document.createElement("p");
+    userLabel.textContent = currentUserId ? `You are logged in as ${username}` : "You are not logged in";
 
     const sourceId = data.source_id;
 
     // Send report
-    reportButton.onclick = () => {
+    reportButton.onclick = async () => {
+        //const url = await chrome.tabs.query({active: true, currentWindow: true}).url;
+        const url = domain;
         const description = descriptionBox.value;
-        const accuracy = accuracySlider.value;
-        const transparency = transparencySlider.value;
-        const integrity = integritySlider.value;
-        const manipulation = manipulationSlider.value;
-        const authenticity = authenticitySlider.value;
-        const credibility = credibilitySlider.value;
+        const accuracy_score = accuracySlider.value;
+        const transparency_score = transparencySlider.value;
+        const integrity_score = integritySlider.value;
+        const manipulation_score = manipulationSlider.value;
+        const authenticity_score = authenticitySlider.value;
+        const credibility_score = credibilitySlider.value;
 
         fetch("https://sanndex.org/report", {
             method: "POST",
@@ -211,14 +216,16 @@ function openReportPopup(data, name, event) {
                 userId: currentUserId,
                 url,
                 description,
-                accuracy,
-                transparency,
-                integrity,
-                manipulation,
-                authenticity,
-                credibility
+                accuracy_score,
+                transparency_score,
+                integrity_score,
+                manipulation_score,
+                authenticity_score,
+                credibility_score
             })
         });
+        
+        overlay.remove();
     };
 
     // Back button
@@ -227,11 +234,12 @@ function openReportPopup(data, name, event) {
     back.style.float = "right";
     back.onclick = () => {
         overlay.remove();
-        openSanndexPopup(data,name,event)
+        openSanndexPopup(data,name,event);
     }
 
     popup.appendChild(back);
     popup.appendChild(title);
+    popup.appendChild(userLabel);
 
     popup.appendChild(accuracyLabel);
     popup.appendChild(accuracySlider);
@@ -284,10 +292,7 @@ function openSanndexPopup(data, name, event) {
     popup.style.boxShadow = "0 5px 20px rgba(0,0,0,0.3)";
 
     const title = document.createElement("h2");
-    title.textContent = `Sanndex Review`;
-
-    const nameEl = document.createElement("p");
-    nameEl.textContent = name;
+    title.textContent = `${name}'s Sanndex Review`;
 
     const score = document.createElement("p");
     score.textContent = data ? `Score: ${data.accuracy_score}` : "No rating yet";

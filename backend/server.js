@@ -62,6 +62,7 @@ passport.use(new GoogleStrategy({
 
     const email = profile.emails[0].value;
     const googleId = profile.id;
+    const name = profile.displayName;
 
     let user = await pool.query(
       "SELECT * FROM users WHERE google_id=$1",
@@ -70,9 +71,9 @@ passport.use(new GoogleStrategy({
 
     if (user.rows.length === 0) {
       user = await pool.query(
-        `INSERT INTO users (google_id, email)
-         VALUES ($1,$2) RETURNING *`,
-        [googleId, email]
+        `INSERT INTO users (google_id, email, username)
+         VALUES ($1,$2,$3) RETURNING *`,
+        [googleId, email, name]
       );
     }
 
@@ -89,6 +90,18 @@ const pool = new Pool({
 });
 
 // Functions
+async function getUserByUserId(userId) {
+  if (!userId) return null;
+
+  const userRes = await pool.query(
+    `SELECT * FROM users WHERE id = $1`,
+    [userId]
+  );
+
+  if (userRes.rows.length === 0) return null; // no source found for that name
+  return userRes.rows[0].id;
+}
+
 async function insertSourceWithDomain(name, domain) {
   if (!domain || !name) return;
 
@@ -242,7 +255,9 @@ app.get("/me", (req, res) => {
   if (!req.session.userId) {
     return res.json({ userId: null });
   }
-  res.json({ userId: req.session.userId });
+  const userId = req.session.userId;
+  res.json({ userId: userId });
+  res.json({ userInfo: getUserByUserId(userId) });
 });
 
 // Logout

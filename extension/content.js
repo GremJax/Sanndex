@@ -234,7 +234,7 @@ function openReportPopup(data, name, event) {
     popup.appendChild(title);
 
     popup.appendChild(accuracyLabel);
-    popup.appendChild(accuracyLabel);
+    popup.appendChild(accuracySlider);
 
     popup.appendChild(transparencyLabel);
     popup.appendChild(transparencySlider);
@@ -247,7 +247,7 @@ function openReportPopup(data, name, event) {
 
     popup.appendChild(authenticityLabel);
     popup.appendChild(authenticitySlider);
-    
+
     popup.appendChild(credibilityLabel);
     popup.appendChild(credibilitySlider);
 

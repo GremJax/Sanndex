@@ -4,9 +4,21 @@ const { Pool } = require("pg")
 const cors = require('cors');
 const rateLimit = require("express-rate-limit");
 
+// HTML
 const app = express()
 app.use(express.json())
-app.use(cors()); // allow all origins during dev
+
+// CORS
+app.use(cors({
+  origin: [
+    "https://sanndex.org",
+    "https://www.youtube.com",
+    "https://x.com"
+  ],
+  credentials: true
+}));
+
+// Static website
 app.use(express.static("public"));
 
 // limiter
@@ -17,7 +29,6 @@ const limiter = rateLimit({
   legacyHeaders: false,
   message: { error: "Too many requests. Slow down." }
 });
-
 app.use(limiter);
 
 // session
@@ -69,7 +80,7 @@ passport.use(new GoogleStrategy({
   }
 ));
 
-// Database fetch
+// Database connection
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
@@ -77,6 +88,7 @@ const pool = new Pool({
   }
 });
 
+// Functions
 async function insertSourceWithDomain(name, domain) {
   if (!domain || !name) return;
 
@@ -323,8 +335,6 @@ app.post("/report", async (req, res) => {
 
   res.json({ success: true });
 });
-
-// 
 
 const PORT = process.env.PORT || 3000;
 

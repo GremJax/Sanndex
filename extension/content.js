@@ -7,17 +7,8 @@ function normalizeDomain(url) {
   return window.location.hostname.replace(/^www\./, '');
 }
 
-function getTotalScore(data) {
-    return (data.accuracy_score + 
-        data.transparency_score + 
-        data.integrity_score +
-        data.manipulation_score +
-        data.authenticity_score +
-        data.credibility_score) / 6
-}
-
 // Get proper icon
-function chooseIcon(data) {
+function chooseIcon(data, totalScore) {
     if (!data || data.error) return "unrated.svg";
 
     if (data.score_type == "gold_star") return "gold_star.svg";
@@ -29,21 +20,18 @@ function chooseIcon(data) {
     switch (data.status) {
         case "pending": return "under_review.svg";
         case "ai_generated": {
-            const totalScore = getTotalScore(data);
             if (totalScore >= 80) return "good_ai.svg";
             if (totalScore >= 60) return "questionable_ai.svg";
             if (totalScore >= 40) return "unreliable_ai.svg";
             return "misleading_ai.svg";
         }
         case "verified": {
-            const totalScore = getTotalScore(data);
             if (totalScore >= 80) return "good_verified.svg";
             if (totalScore >= 60) return "questionable_verified.svg";
             if (totalScore >= 40) return "unreliable_verified.svg";
             return "misleading_verified.svg";
         }
         default: {
-            const totalScore = getTotalScore(data);
             if (totalScore >= 80) return "good.svg";
             if (totalScore >= 60) return "questionable.svg";
             if (totalScore >= 40) return "unreliable.svg";
@@ -52,12 +40,11 @@ function chooseIcon(data) {
     }
 }
 
-function chooseTitle(data) {
+function chooseTitle(data, totalScore) {
     if (!data || data.error) return "No Sanndex rating";
     if (data.status == "verified") return "Sanndex rating is pending";
     if (data.score_type == "gold_star") return "Sanndex rating: Exemplary";
     if (data.score_type == "na") return "Sanndex rating is not needed";
-    const totalScore = getTotalScore(data);
     if (totalScore >= 80) return "Sanndex rating: Good";
     if (totalScore >= 60) return "Sanndex rating: Questionable";
     if (totalScore >= 40) return "Sanndex rating: Unreliable";
@@ -65,14 +52,14 @@ function chooseTitle(data) {
 }
 
 // Create and insert badge
-function insertBadge(targetElement, size, data, name) {
+function insertBadge(targetElement, size, data, name, totalScore) {
 
-  const iconName = chooseIcon(data);
+  const iconName = chooseIcon(data, totalScore);
 
   const icon = document.createElement("img");
   const size_px = `${size}px`
 
-  icon.title = chooseTitle(data);
+  icon.title = chooseTitle(data, totalScore);
 
   icon.src = chrome.runtime.getURL(`icons/sanndex_${iconName}`);
   icon.style.width = size_px;
@@ -82,10 +69,70 @@ function insertBadge(targetElement, size, data, name) {
   icon.style.cursor = "pointer";
 
   icon.onclick = () => {
-    window.open(`https://sanndex.org/review/${name}`, "_blank");
+    openSanndexPopup(data, name);
   };
 
   targetElement.appendChild(icon);
+}
+
+function openSanndexPopup(data, name) {
+    const overlay = document.createElement("div");
+    overlay.style.position = "fixed";
+    overlay.style.top = "0";
+    overlay.style.left = "0";
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
+    overlay.style.background = "rgba(0,0,0,0.5)";
+    overlay.style.zIndex = "999999";
+
+    const popup = document.createElement("div");
+    popup.style.position = "absolute";
+    popup.style.top = "50%";
+    popup.style.left = "50%";
+    popup.style.transform = "translate(-50%, -50%)";
+    popup.style.background = "white";
+    popup.style.padding = "20px";
+    popup.style.borderRadius = "10px";
+    popup.style.width = "320px";
+    popup.style.fontFamily = "Arial";
+    popup.style.boxShadow = "0 5px 20px rgba(0,0,0,0.3)";
+
+    const title = document.createElement("h2");
+    title.textContent = `Sanndex Review`;
+
+    const nameEl = document.createElement("p");
+    nameEl.textContent = name;
+
+    const score = document.createElement("p");
+    score.textContent = data ? `Score: ${getTotalScore(data)}` : "No rating yet";
+
+    const siteButton = document.createElement("button");
+    siteButton.textContent = "View Full Review";
+    siteButton.onclick = () => {
+        window.open(`https://sanndex.org/review/${name}`, "_blank");
+    };
+
+    const reportButton = document.createElement("button");
+    reportButton.textContent = "Report Source";
+    reportButton.style.marginLeft = "10px";
+    reportButton.onclick = () => {
+        window.open(`https://sanndex.org/report/${name}`, "_blank");
+    };
+
+    const close = document.createElement("button");
+    close.textContent = "Close";
+    close.style.float = "right";
+    close.onclick = () => overlay.remove();
+
+    popup.appendChild(close);
+    popup.appendChild(title);
+    popup.appendChild(nameEl);
+    popup.appendChild(score);
+    popup.appendChild(siteButton);
+    popup.appendChild(reportButton);
+
+    overlay.appendChild(popup);
+    document.body.appendChild(overlay);
 }
 
 // Domain-specific logic for finding the name element
@@ -185,10 +232,10 @@ const observer = new MutationObserver(() => {
             fetch(`https://sanndex.org/source?domain=${result.domain.toLowerCase()}/${result.name.toLowerCase()}`)
             .then(res => res.json())
             .then(data => {
-                insertBadge(result.element, result.size, data.review, data.source.name);
+                insertBadge(result.element, result.size, data.review, data.source.name, data.score);
             })
             .catch(err => {
-                insertBadge(result.element, result.size, null, result.name);
+                insertBadge(result.element, result.size, null, result.name, 0);
                 console.error(`Sanndex fetch error for ${result.name}:`, err);
             });
         }

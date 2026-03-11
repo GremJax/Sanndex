@@ -149,6 +149,18 @@ async function getReviewBySourceId(sourceId) {
   return reviewRes.rows[0];
 }
 
+function getTotalScore(data) {
+  if (!data) return null;
+  return (
+    data.accuracy_score + 
+    data.transparency_score + 
+    data.integrity_score +
+    data.manipulation_score +
+    data.authenticity_score +
+    data.credibility_score
+  ) / 6
+}
+
 app.get("/source", async (req, res) => {
   try {
     const domain = req.query.domain;
@@ -177,7 +189,8 @@ app.get("/source", async (req, res) => {
 
     res.json({
       source: source,
-      review: topReview
+      review: topReview,
+      score: getTotalScore(topReview),
     });
 
   } catch (err) {

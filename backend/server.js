@@ -12,7 +12,7 @@ app.use(express.static("public"));
 // limiter
 const limiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute window
-  max: 200,            // 200 req/min
+  max: 600,            // 600 req/min
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests. Slow down." }
@@ -228,9 +228,8 @@ app.get("/auth/google/callback",
 // Get User Id
 app.get("/me", (req, res) => {
   if (!req.session.userId) {
-    return res.status(401).json({ error: "Not logged in" });
+    return res.json({ userId: null });
   }
-
   res.json({ userId: req.session.userId });
 });
 
@@ -278,7 +277,54 @@ app.get("/source", async (req, res) => {
     console.error(err);
     res.status(500).json({ error: "Internal server error" });
   }
-})
+});
+
+// Post report
+app.post("/report", async (req, res) => {
+
+  const { sourceId, userId, url, description, 
+    accuracy_score,
+    transparency_score,
+    integrity_score,
+    manipulation_score,
+    authenticity_score,
+    credibility_score 
+  } = req.body;
+
+  if (!sourceId ||
+    !accuracy_score ||
+    !transparency_score ||
+    !integrity_score ||
+    !manipulation_score ||
+    !authenticity_score ||
+    !credibility_score ) {
+    return res.status(400).json({ error: "Missing fields" });
+  }
+
+  await pool.query(
+    `INSERT INTO reports
+      (source_id, user_id, evidence_url, description, 
+      accuracy_score,
+      transparency_score,
+      integrity_score,
+      manipulation_score,
+      authenticity_score,
+      credibility_score)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+    [sourceId, userId, url, description, 
+      accuracy_score,
+      transparency_score,
+      integrity_score,
+      manipulation_score,
+      authenticity_score,
+      credibility_score 
+    ]
+  );
+
+  res.json({ success: true });
+});
+
+// 
 
 const PORT = process.env.PORT || 3000;
 

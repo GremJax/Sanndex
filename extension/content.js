@@ -76,6 +76,188 @@ function insertBadge(targetElement, size, data, name, totalScore) {
   targetElement.appendChild(icon);
 }
 
+function openReportPopup(data, name, event) {
+    const overlay = document.createElement("div");
+    overlay.style.position = "fixed";
+    overlay.style.top = "0";
+    overlay.style.left = "0";
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
+    overlay.style.background = "rgba(0,0,0,0.5)";
+    overlay.style.zIndex = "999999";
+
+    const x = Math.min(event.clientX, window.innerWidth - 340);
+    const y = Math.min(event.clientY, window.innerHeight - 220);
+
+    const popup = document.createElement("div");
+    popup.style.position = "fixed";
+    popup.style.left = `${x}px`;
+    popup.style.top = `${y}px`;
+    popup.style.transform = "translate(-50%, -50%)";
+    popup.style.background = "white";
+    popup.style.padding = "20px";
+    popup.style.borderRadius = "10px";
+    popup.style.width = "320px";
+    popup.style.fontFamily = "Arial";
+    popup.style.boxShadow = "0 5px 20px rgba(0,0,0,0.3)";
+
+    const title = document.createElement("h2");
+    title.textContent = `Report ${name}`;
+
+    const reportButton = document.createElement("button");
+    reportButton.textContent = "Send Report";
+    reportButton.style.marginLeft = "10px";
+
+    const descriptionLabel = document.createElement("div");
+    descriptionLabel.textContent = "Description";
+
+    const descriptionBox = document.createElement("textarea");
+    descriptionBox.style.width = "100%";
+    descriptionBox.style.height = "70px";
+    descriptionBox.placeholder = "Describe the issue...";
+
+    // Accuracy
+    const accuracyLabel = document.createElement("div");
+    accuracyLabel.textContent = "Accuracy";
+    const accuracySlider = document.createElement("input");
+    accuracySlider.type = "range";
+    accuracySlider.min = 0;
+    accuracySlider.max = 100;
+    accuracySlider.value = 50;
+    accuracySlider.style.width = "100%";
+
+    // Transparency
+    const transparencyLabel = document.createElement("div");
+    transparencyLabel.textContent = "Transparency";
+    const transparencySlider = document.createElement("input");
+    transparencySlider.type = "range";
+    transparencySlider.min = 0;
+    transparencySlider.max = 100;
+    transparencySlider.value = 50;
+    transparencySlider.style.width = "100%";
+
+    // Integrity
+    const integrityLabel = document.createElement("div");
+    integrityLabel.textContent = "Integrity";
+    const integritySlider = document.createElement("input");
+    integritySlider.type = "range";
+    integritySlider.min = 0;
+    integritySlider.max = 100;
+    integritySlider.value = 50;
+    integritySlider.style.width = "100%";
+
+    // Manipulation
+    const manipulationLabel = document.createElement("div");
+    manipulationLabel.textContent = "Manipulation";
+    const manipulationSlider = document.createElement("input");
+    manipulationSlider.type = "range";
+    manipulationSlider.min = 0;
+    manipulationSlider.max = 100;
+    manipulationSlider.value = 50;
+    manipulationSlider.style.width = "100%";
+
+    // Authenticity
+    const authenticityLabel = document.createElement("div");
+    authenticityLabel.textContent = "Authenticity";
+    const authenticitySlider = document.createElement("input");
+    authenticitySlider.type = "range";
+    authenticitySlider.min = 0;
+    authenticitySlider.max = 100;
+    authenticitySlider.value = 50;
+    authenticitySlider.style.width = "100%";
+
+    // Credibility
+    const credibilityLabel = document.createElement("div");
+    credibilityLabel.textContent = "Credibility";
+    const credibilitySlider = document.createElement("input");
+    credibilitySlider.type = "range";
+    credibilitySlider.min = 0;
+    credibilitySlider.max = 100;
+    credibilitySlider.value = 50;
+    credibilitySlider.style.width = "100%";
+
+    // Fetch report info
+    const url = domain;
+
+    let currentUserId = null;
+    fetch("https://sanndex.org/me", {
+        credentials: "include"
+    })
+    .then(res => res.json())
+    .then(data => {
+        currentUserId = data.userId;
+    });
+
+    const sourceId = data.source_id;
+
+    // Send report
+    reportButton.onclick = () => {
+        const description = descriptionBox.value;
+        const accuracy = accuracySlider.value;
+        const transparency = transparencySlider.value;
+        const integrity = integritySlider.value;
+        const manipulation = manipulationSlider.value;
+        const authenticity = authenticitySlider.value;
+        const credibility = credibilitySlider.value;
+
+        fetch("https://sanndex.org/report", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                sourceId,
+                userId: currentUserId,
+                url,
+                description,
+                accuracy,
+                transparency,
+                integrity,
+                manipulation,
+                authenticity,
+                credibility
+            })
+        });
+    };
+
+    // Back button
+    const back = document.createElement("button");
+    back.textContent = "back";
+    back.style.float = "right";
+    back.onclick = () => {
+        overlay.remove();
+        openSanndexPopup(data,name,event)
+    }
+
+    popup.appendChild(back);
+    popup.appendChild(title);
+
+    popup.appendChild(accuracyLabel);
+    popup.appendChild(accuracyLabel);
+
+    popup.appendChild(transparencyLabel);
+    popup.appendChild(transparencySlider);
+
+    popup.appendChild(integrityLabel);
+    popup.appendChild(integritySlider);
+
+    popup.appendChild(manipulationLabel);
+    popup.appendChild(manipulationSlider);
+
+    popup.appendChild(authenticityLabel);
+    popup.appendChild(authenticitySlider);
+    
+    popup.appendChild(credibilityLabel);
+    popup.appendChild(credibilitySlider);
+
+    popup.appendChild(descriptionBox);
+    popup.appendChild(reportButton);
+
+    overlay.appendChild(popup);
+    document.body.appendChild(overlay);
+}
+
 function openSanndexPopup(data, name, event) {
     const overlay = document.createElement("div");
     overlay.style.position = "fixed";
@@ -120,8 +302,9 @@ function openSanndexPopup(data, name, event) {
     reportButton.textContent = "Report Source";
     reportButton.style.marginLeft = "10px";
     reportButton.onclick = () => {
-        window.open(`https://sanndex.org/report/${name}`, "_blank");
-    };
+        overlay.remove();
+        openReportPopup(data,name,event)
+    }
 
     const close = document.createElement("button");
     close.textContent = "Close";

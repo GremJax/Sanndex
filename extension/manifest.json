@@ -10,7 +10,11 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["icons/*.svg"],
+      "resources": [
+        "icons/*.svg",
+        "popups/reportPopup.html",
+        "popups/reviewPopup.html"
+    ],
       "matches": ["<all_urls>"]
     }
   ]

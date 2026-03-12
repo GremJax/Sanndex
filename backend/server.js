@@ -320,6 +320,22 @@ app.post("/username", requireAuth, async (req, res) => {
   res.redirect("/account");
 })
 
+// Access all account reports
+app.get("/reports", async(req, res) => {
+  const { userId } = req.body;
+  if (!userId) {
+    return res.status(400).json({ error: "Missing fields" });
+  }
+
+  let reportRes = await pool.query(
+    `SELECT * FROM reports 
+      WHERE user_id = $1`,
+    [userId]
+  );
+
+  res.json(reportRes);
+});
+
 // Access source info
 app.get("/source", async (req, res) => {
   try {

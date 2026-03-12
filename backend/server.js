@@ -273,11 +273,14 @@ app.get("/source", async (req, res) => {
     }
 
     // Get the sourceId first
-    const sourceId = await getSourceIdByDomain(domain);
+    let sourceId = await getSourceIdByDomain(domain);
 
     // Null check before querying reviews
     if (!sourceId) {
-      return res.status(404).json({ error: "No source found for that domain" });
+      // Check name directly
+      sourceId = await getSourceIdByName(domain);
+
+      if (!sourceId) return res.status(404).json({ error: "No source found for that domain" });
     }
 
     // Get the account information

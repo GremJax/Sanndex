@@ -247,13 +247,17 @@ app.get("/auth/google/callback",
 );
 
 // Get User Id
-app.get("/me", (req, res) => {
+app.get("/me", async (req, res) => {
   if (!req.session.userId) {
     return res.json({ userId: null });
   }
-  const userId = req.session.userId;
-  res.json({ userId: userId });
-  res.json({ userInfo: getUserByUserId(userId) });
+
+  const user = await getUserByUserId(req.session.userId);
+
+  res.json({
+    userId: req.session.userId,
+    userInfo: user
+  });
 });
 
 // Change username
@@ -264,7 +268,7 @@ app.post("/username", async (req, res) => {
     return res.status(400).json({ error: "Missing fields" });
   }
 
-  if (!getUserByUserId(userId)) {
+  if (!(await getUserByUserId(userId))) {
     return res.status(400).json({ error: "User does not exist" });
   }
 
@@ -381,6 +385,11 @@ app.get("/login", (req,res)=> res.sendFile(site+"/login.html"))
 app.get("/dashboard", (req,res)=> res.sendFile(site+"/dashboard.html"))
 app.get("/account", (req,res)=> res.sendFile(site+"/account.html"))
 app.get("/review/:name", (req,res)=> res.sendFile(site+"/review.html"))
+
+app.use((err, req, res, next) => {
+  console.error("SERVER ERROR:", err);
+  res.status(500).send("Internal Server Error");
+});
 
 const PORT = process.env.PORT || 3000;
 

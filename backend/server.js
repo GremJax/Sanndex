@@ -45,6 +45,14 @@ app.use(session({
   }
 }));
 
+// Database connection
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+
 // passport
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
@@ -79,14 +87,6 @@ passport.use(new GoogleStrategy({
     done(null, user.rows[0]);
   }
 ));
-
-// Database connection
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
 
 // Functions
 async function getUserByUserId(userId) {

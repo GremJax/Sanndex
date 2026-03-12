@@ -22,7 +22,17 @@ fetch("/me", {credentials:"include"})
             content.innerHTML += `<p>No reports yet</p>`;
         }
         data.forEach(report => {
-            content.innerHTML += `<p>${report}</p>`;
+
+            let sourceName = "!NameNotFound!"
+            fetch(`/source?id=${report.source_id}`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data || data.error) return
+                sourceName = data.name
+            })
+
+            const reportString = `[${report.created_at}]: Reported ${sourceName}, description: ${report.description}`;
+            content.innerHTML += `<p>${reportString}</p><a href=${report.url}>Evidence</a>`;
         })
     
     })

@@ -18,6 +18,9 @@ fetch("/me", {credentials:"include"})
         
         content.innerHTML += `<p>All reports:</p>`;
 
+        if (data.length == 0) {
+            content.innerHTML += `<p>No reports yet</p>`;
+        }
         data.forEach(report => {
             content.innerHTML += `<p>${report}</p>`;
         })

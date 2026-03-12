@@ -14,6 +14,14 @@
             <h1 id="title">About</h1>
             
             <div>
+            <p>Hi my name is Fredrik Thorsteinson, I want to make the internet safer and its users smarter. So I made this tool for everyone to make each other safer and smarter with how we consume our content :></p>
+            </div>
+
+            <div>
+            <a href = "mailto:fredrikhthorsteinson@gmail.com">Go easy on the emails, im just one guy</a>
+            </div>
+            
+            <div>
             <a id="githubLink" href="https://github.com/GremJax/Sanndex">Github</a>
             </div>
             
@@ -22,7 +30,7 @@
                 fetch("https://raw.githubusercontent.com/GremJax/Sanndex/main/README.md")
                 .then(res => res.text())
                 .then(md => {
-                    document.getElementById("readme").innerText = marked.parse(md);
+                    document.getElementById("readme").innerText = md;
                 })
             </script>
         </main>

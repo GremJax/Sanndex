@@ -15,7 +15,8 @@ app.use(cors({
   origin: [
     "https://sanndex.org",
     "https://www.youtube.com",
-    "https://x.com"
+    "https://x.com",
+    "chrome-extension://mkhjdjhjjdimpaenonlfclokmpomiang"
   ],
   credentials: true
 }));
@@ -281,7 +282,7 @@ app.get("/me", async (req, res) => {
       id: req.user.id,
       username: req.user.username,
       email: req.user.email,
-      persmission: req.user.persmission,
+      permission: req.user.permission,
     }
   });
 });

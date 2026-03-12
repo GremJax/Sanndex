@@ -12,7 +12,7 @@ fetch(`/source?domain=${name.toLowerCase()}`)
     document.getElementById("title").innerText =
         `Review for ${data.source.name}`
 
-    document.getElementById("score").innerText =
+    document.getElementById("totalScore").innerText =
         `Score: ${data.score}`
 
 }).catch(() => {

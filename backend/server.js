@@ -44,6 +44,7 @@ app.use(session({
     maxAge: 1000 * 60 * 60 * 24 * 30
   }
 }));
+app.set("trust proxy", 1);
 
 // Database connection
 const pool = new Pool({
@@ -296,6 +297,7 @@ app.post("/logout", (req, res) => {
     req.session.destroy(() => {
       res.json({ success: true });
     });
+    res.redirect("/");
   });
 
 });
@@ -314,6 +316,8 @@ app.post("/username", requireAuth, async (req, res) => {
       WHERE id = $2`,
     [username, req.user.id]
   );
+  
+  res.redirect("/account");
 })
 
 // Access source info

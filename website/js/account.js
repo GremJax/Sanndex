@@ -7,7 +7,7 @@ fetch("/me", {credentials:"include"})
         return
     }
 
-    document.getElementById("username").innerText = data.user.username
+    document.getElementById("username").innerText = `Username: &{data.user.username}`
     document.getElementById("permissions").innerText = `Permissions: ${data.user.permissions}`
     
     document.getElementById("changeUsernameButton").onClick = async () => {

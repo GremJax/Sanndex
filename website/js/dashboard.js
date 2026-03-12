@@ -8,5 +8,6 @@ fetch("/me", {credentials:"include"})
     }
 
     document.body.innerHTML += `<p>Hello ${data.userInfo.username}</p>`
+    document.body.innerHTML += `<a href = "https://sanndex.org/account">Account info</a>`
 
 })

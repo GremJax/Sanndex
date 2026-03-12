@@ -287,7 +287,7 @@ app.get("/me", async (req, res) => {
 });
 
 // Logout
-app.post("/logout", (req, res) => {
+app.post("/logout", requireAuth, (req, res) => {
 
   req.logout(function(err) {
     if (err) {
@@ -321,19 +321,13 @@ app.post("/username", requireAuth, async (req, res) => {
 })
 
 // Access all account reports
-app.get("/reports", async(req, res) => {
-  const { userId } = req.body;
-  if (!userId) {
-    return res.status(400).json({ error: "Missing fields" });
-  }
-
-  let reportRes = await pool.query(
-    `SELECT * FROM reports 
-      WHERE user_id = $1`,
-    [userId]
+app.get("/reports", requireAuth, async(req, res) => {
+  const reports = await pool.query(
+    `SELECT * FROM reports WHERE user_id = $1`,
+    [req.user.id]
   );
 
-  res.json(reportRes);
+  res.json(reports.rows);
 });
 
 // Access source info
@@ -384,7 +378,7 @@ app.get("/source", async (req, res) => {
 app.post("/report", async (req, res) => {
   console.log("REPORT BODY:", req.body);
 
-  const { sourceId, userId, url, description, 
+  const { sourceId, url, description, 
     accuracy_score,
     transparency_score,
     integrity_score,
@@ -402,6 +396,8 @@ app.post("/report", async (req, res) => {
     !credibility_score ) {
     return res.status(400).json({ error: "Missing fields" });
   }
+
+  const userId = req.user ? req.user.id : null;
 
   await pool.query(
     `INSERT INTO reports
@@ -433,6 +429,7 @@ app.get("/", (req,res)=> res.sendFile(site+"/index.html"))
 app.get("/login", (req,res)=> res.sendFile(site+"/login.html"))
 app.get("/dashboard", (req,res)=> res.sendFile(site+"/dashboard.html"))
 app.get("/account", (req,res)=> res.sendFile(site+"/account.html"))
+app.get("/about", (req,res)=> res.sendFile(site+"/about.html"))
 app.get("/review/:name", (req,res)=> res.sendFile(site+"/review.html"))
 
 app.use((err, req, res, next) => {

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sanndex About</title>
+</head>
+<body>
+    <a href="/">Homepage</a>
+    <h1 id="title">About</h1>
+    
+    <div>
+      <a id="githubLink" href="https://github.com/GremJax/Sanndex">Github</a>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <div id="readme"></div>
+    <script>
+        fetch("../README.md")
+        .then(res => res.text())
+        .then(md => {
+            document.getElementById("readme").innerText = marked.parse(md);
+        })
+    </script>
+    
+</body>
+</html>

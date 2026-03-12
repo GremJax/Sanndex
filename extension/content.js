@@ -123,7 +123,6 @@ async function openReportPopup(data, name, event) {
     overlay.querySelector(".sendReport").onclick = async () => {
         const payload = {
             sourceId: data.source_id,
-            userId: currentUserId,
             url: domain,
             description: overlay.querySelector(".description").value,
             accuracy_score: overlay.querySelector(".accuracy").value,

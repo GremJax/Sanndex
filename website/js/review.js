@@ -1,9 +1,12 @@
-const parts = window.location.pathname.split("/")
+const parts = window.location.pathname.split("/");
 
-const name = parts[3]
+const name = parts[2];
 
 fetch(`/source?domain=${name}`)
-.then(res => res.json())
+.then(res => {
+    if(!res.ok) throw new Error("Not found")
+    return res.json()
+})
 .then(data => {
 
     document.getElementById("title").innerText =

@@ -10,27 +10,6 @@ const app = express()
 app.use(express.json())
 app.use(express.static(path.join(__dirname, "../website")));
 
-// page routes
-app.get("/", (req,res)=>{
-  res.sendFile(path.join(__dirname,"../website/index.html"))
-})
-
-app.get("/login", (req,res)=>{
-  res.sendFile(path.join(__dirname,"../website/login.html"))
-})
-
-app.get("/dashboard", (req,res)=>{
-  res.sendFile(path.join(__dirname,"../website/dashboard.html"))
-})
-
-app.get("/account", (req,res)=>{
-  res.sendFile(path.join(__dirname,"../website/account.html"))
-})
-
-app.get("/review/:name", (req,res)=>{
-  res.sendFile(path.join(__dirname,"../website/review.html"))
-})
-
 // CORS
 app.use(cors({
   origin: [
@@ -277,6 +256,26 @@ app.get("/me", (req, res) => {
   res.json({ userInfo: getUserByUserId(userId) });
 });
 
+// Change username
+app.post("/username", async (req, res) => {
+  const { userId, username } = req.body;
+
+  if ( !userId || !username ) {
+    return res.status(400).json({ error: "Missing fields" });
+  }
+
+  if (!getUserByUserId(userId)) {
+    return res.status(400).json({ error: "User does not exist" });
+  }
+
+  await pool.query(
+    `UPDATE users 
+      SET username = $1
+      WHERE id = $2`,
+    [username, userId]
+  );
+})
+
 // Logout
 app.post("/logout", (req, res) => {
   req.session.destroy(() => {
@@ -296,12 +295,14 @@ app.get("/source", async (req, res) => {
     // Get the sourceId first
     let sourceId = await getSourceIdByDomain(domain);
 
-    // Null check before querying reviews
+    // Check name directly
     if (!sourceId) {
-      // Check name directly
       sourceId = await getSourceIdByName(domain);
+    }
 
-      if (!sourceId) return res.status(404).json({ error: "No source found for that domain" });
+    // Null check for unregistered sources
+    if (!sourceId) {
+      return res.status(404).json({ error: "No source found for that domain" });
     }
 
     // Get the account information
@@ -371,6 +372,15 @@ app.post("/report", async (req, res) => {
 
   res.json({ success: true });
 });
+
+// page routes
+const site = path.join(__dirname,"../website")
+
+app.get("/", (req,res)=> res.sendFile(site+"/index.html"))
+app.get("/login", (req,res)=> res.sendFile(site+"/login.html"))
+app.get("/dashboard", (req,res)=> res.sendFile(site+"/dashboard.html"))
+app.get("/account", (req,res)=> res.sendFile(site+"/account.html"))
+app.get("/review/:name", (req,res)=> res.sendFile(site+"/review.html"))
 
 const PORT = process.env.PORT || 3000;
 

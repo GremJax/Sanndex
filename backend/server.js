@@ -10,6 +10,27 @@ const app = express()
 app.use(express.json())
 app.use(express.static(path.join(__dirname, "../website")));
 
+// page routes
+app.get("/", (req,res)=>{
+  res.sendFile(path.join(__dirname,"../website/index.html"))
+})
+
+app.get("/login", (req,res)=>{
+  res.sendFile(path.join(__dirname,"../website/login.html"))
+})
+
+app.get("/dashboard", (req,res)=>{
+  res.sendFile(path.join(__dirname,"../website/dashboard.html"))
+})
+
+app.get("/account", (req,res)=>{
+  res.sendFile(path.join(__dirname,"../website/account.html"))
+})
+
+app.get("/review/:name", (req,res)=>{
+  res.sendFile(path.join(__dirname,"../website/review.html"))
+})
+
 // CORS
 app.use(cors({
   origin: [

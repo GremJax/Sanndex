@@ -2,17 +2,17 @@ fetch("/me", {credentials:"include"})
 .then(res => res.json())
 .then(data => {
 
-    if(!data.userId) {
+    if(!data.loggedIn) {
         document.body.innerHTML += `<a href = "https://sanndex.org/login">Go to login</a>`
         return
     }
 
-    document.getElementById("username").innerText = data.userInfo.username
-    document.getElementById("permissions").innerText = `Permissions: ${data.userInfo.permissions}`
+    document.getElementById("username").innerText = data.user.username
+    document.getElementById("permissions").innerText = `Permissions: ${data.user.permissions}`
     
     document.getElementById("changeUsernameButton").onClick = async () => {
         const newUsername = document.getElementById("changeUsernameTextarea").value;
-        const payload = {userId: data.userId, username: newUsername};
+        const payload = {userId: data.user.id, username: newUsername};
 
         await fetch("https://sanndex.org/username", {
             method: "POST",

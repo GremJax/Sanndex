@@ -111,8 +111,8 @@ async function openReportPopup(data, name, event) {
     fetch("https://sanndex.org/me", { credentials: "include" })
     .then(res => res.json())
     .then(data => {
-        currentUserId = data.userId;
-        username = data.userInfo.username;
+        currentUserId = data.user.id;
+        username = data.user.username;
     });
 
     overlay.querySelector(".userLabel").textContent = currentUserId ? 

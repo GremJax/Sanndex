@@ -60,6 +60,23 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 app.use(passport.initialize());
 app.use(passport.session());
 
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM users WHERE id=$1",
+      [id]
+    );
+
+    done(null, result.rows[0]);
+  } catch (err) {
+    done(err, null);
+  }
+});
+
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
@@ -231,6 +248,13 @@ function getTotalScore(data) {
   ) / 6
 }
 
+function requireAuth(req, res, next) {
+  if (!req.user) {
+    return res.status(401).json({ error: "Not logged in" });
+  }
+  next();
+}
+
 // Authenticate with Google
 app.get("/auth/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
@@ -240,52 +264,57 @@ app.get("/auth/google",
 app.get("/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
-
-    req.session.userId = req.user.id;
     res.redirect("/dashboard");
   }
 );
 
 // Get User Id
 app.get("/me", async (req, res) => {
-  if (!req.session.userId) {
-    return res.json({ userId: null });
+  if (!req.user) {
+    return res.json({ loggedIn: false });
   }
 
-  const user = await getUserByUserId(req.session.userId);
-
   res.json({
-    userId: req.session.userId,
-    userInfo: user
+    loggedIn: true,
+    user: {
+      id: req.user.id,
+      username: req.user.username,
+      email: req.user.email,
+      persmission: req.user.persmission,
+    }
   });
 });
 
+// Logout
+app.post("/logout", (req, res) => {
+
+  req.logout(function(err) {
+    if (err) {
+      return res.status(500).json({ error: "Logout failed" });
+    }
+
+    req.session.destroy(() => {
+      res.json({ success: true });
+    });
+  });
+
+});
+
 // Change username
-app.post("/username", async (req, res) => {
-  const { userId, username } = req.body;
+app.post("/username", requireAuth, async (req, res) => {
+  const { username } = req.body;
 
-  if ( !userId || !username ) {
+  if ( !username ) {
     return res.status(400).json({ error: "Missing fields" });
-  }
-
-  if (!(await getUserByUserId(userId))) {
-    return res.status(400).json({ error: "User does not exist" });
   }
 
   await pool.query(
     `UPDATE users 
       SET username = $1
       WHERE id = $2`,
-    [username, userId]
+    [username, req.user.id]
   );
 })
-
-// Logout
-app.post("/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.json({ success: true });
-  });
-});
 
 // Access source info
 app.get("/source", async (req, res) => {

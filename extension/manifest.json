@@ -8,6 +8,9 @@
       "js": ["content.js"]
     }
   ],
+  "host_permissions": [
+    "https://sanndex.org/*"
+  ],
   "web_accessible_resources": [
     {
       "resources": [

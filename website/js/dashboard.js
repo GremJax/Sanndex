@@ -5,7 +5,7 @@ fetch("/me", {credentials:"include"})
     const content = document.querySelector(".content");
 
     if(!data.loggedIn) {
-        content.innerHTML += `<a href = "https://sanndex.org/login">Go to login</a>`
+        content.innerHTML = `<a href = "https://sanndex.org/login">Go to login</a>`
         return
     }
 

@@ -298,7 +298,6 @@ app.post("/logout", requireAuth, (req, res) => {
     req.session.destroy(() => {
       res.json({ success: true });
     });
-    res.redirect("/");
   });
 
 });
@@ -308,7 +307,7 @@ app.post("/username", requireAuth, async (req, res) => {
   const { username } = req.body;
 
   if ( !username ) {
-    return res.status(400).json({ error: "Missing fields" });
+    return res.status(400).json({ error: "Missing new username" });
   }
 
   await pool.query(
@@ -317,9 +316,22 @@ app.post("/username", requireAuth, async (req, res) => {
       WHERE id = $2`,
     [username, req.user.id]
   );
-  
-  res.redirect("/account");
 })
+
+// Get user public info
+app.get("/user-info", async(req, res) => {
+  const id = req.query.id;
+  if (!id) return res.status(400).json({ error: "No user id specified" });
+
+  const user = await pool.query(
+    `SELECT username, reputation_score, permission FROM users WHERE id = $1`,
+    [id]
+  );
+  
+  if (user.rows.length === 0) return res.status(404).json({ error: "No user found for this id" });
+
+  res.json(user.rows[0]);
+});
 
 // Access all account reports
 app.get("/reports", requireAuth, async(req, res) => {

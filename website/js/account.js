@@ -9,27 +9,27 @@ fetch("/me", {credentials:"include"})
     }
 
     document.getElementById("username").innerText = `Username: ${data.user.username}`
-    document.getElementById("permissions").innerText = `Permissions: ${data.user.permissions}`
+    document.getElementById("permissions").innerText = `Permissions: ${data.user.permission}`
     
     document.getElementById("changeUsernameButton").onClick = async () => {
         const newUsername = document.getElementById("changeUsernameTextarea").value;
-        const payload = {userId: data.user.id, username: newUsername};
 
         await fetch("https://sanndex.org/username", {
             method: "POST",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({username: newUsername})
         });
+        window.location.reload();
     }
     
     document.getElementById("logoutButton").onClick = async () => {
         await fetch("https://sanndex.org/logout", {
             method: "POST",
             credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({})
+            headers: { "Content-Type": "application/json" }
         });
+        window.location.reload();
     }
 
 })

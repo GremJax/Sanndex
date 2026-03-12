@@ -105,25 +105,21 @@ async function openReportPopup(data, name, event) {
     };
 
     // User info
-    let currentUserId = null;
-    let username = "anon";
-
     fetch("https://sanndex.org/me", { credentials: "include" })
     .then(res => res.json())
     .then(data => {
-        currentUserId = data.user.id;
-        username = data.user.username;
-    });
-
-    overlay.querySelector(".userLabel").textContent = currentUserId ? 
-        `You are logged in as ${username}` : "You are not logged in";
+        if (!data.loggedIn) {
+            overlay.querySelector(".userLabel").textContent = "You are not logged in";
+            return;
+        }
         
-    let domain = window.location.hostname.replace(/^www\./,'');
+        overlay.querySelector(".userLabel").textContent = `You are logged in as ${data.user.username}`;
+    });
 
     overlay.querySelector(".sendReport").onclick = async () => {
         const payload = {
             sourceId: data.source_id,
-            url: domain,
+            url: window.location.href,
             description: overlay.querySelector(".description").value,
             accuracy_score: overlay.querySelector(".accuracy").value,
             transparency_score: overlay.querySelector(".transparency").value,

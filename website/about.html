@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Sanndex About</title>
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
     <a href="/">Homepage</a>
@@ -11,10 +12,9 @@
       <a id="githubLink" href="https://github.com/GremJax/Sanndex">Github</a>
     </div>
     
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <div id="readme"></div>
+    <div id="readme">Could not fetch readme :(</div>
     <script>
-        fetch("../README.md")
+        fetch("https://raw.githubusercontent.com/GremJax/Sanndex/main/README.md")
         .then(res => res.text())
         .then(md => {
             document.getElementById("readme").innerText = marked.parse(md);

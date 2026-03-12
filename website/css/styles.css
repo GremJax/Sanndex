@@ -1,0 +1,23 @@
+body {
+  margin: 0;
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+.site-header {
+  background-color: #1f2933;
+  color: white;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.site-header a {
+  color: white;
+  text-decoration: none;
+  margin-left: 16px;
+}
+
+.site-header a:hover {
+  text-decoration: underline;
+}

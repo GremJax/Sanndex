@@ -2,7 +2,7 @@ const parts = window.location.pathname.split("/");
 
 const name = parts[2];
 
-fetch(`/source?domain=${name}`)
+fetch(`/source?domain=${name.toLowerCase()}`)
 .then(res => {
     if(!res.ok) throw new Error("Not found")
     return res.json()

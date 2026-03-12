@@ -183,12 +183,17 @@ function findNameElements() {
             const channelHeader = document.querySelector("h1.dynamicTextViewModelH1");
             if (channelHeader && !channelHeader.dataset.sanndex) {
                 channelHeader.dataset.sanndex = "true";
-                return [{
+                
+                const handle = document.querySelector(".yt-content-metadata-view-model__metadata-text").innerText
+                    .replace("@", "")
+                if (!handle || handle.length == 0) return;
+                
+                results.push({
                     element: channelHeader,
-                    name: channelHeader.textContent.replace("@","").trim(),
+                    name: handle,
                     domain: "youtube",
                     size: 32
-                }];
+                });
             }
 
             // Video page
@@ -203,12 +208,36 @@ function findNameElements() {
                 });
             }
             
-            // Homepage and shorts
-            document.querySelectorAll('a[href^="/@"]').forEach(el => {
+            // Homepage
+            document.querySelectorAll('.yt-content-metadata-view-model__metadata-row').forEach(el => {
                 if (!el || el.dataset.sanndex) return;
                 el.dataset.sanndex = "true";
 
-                const handle = el.getAttribute("href")
+                const handleLink = el.querySelector('a[href^="/"]');
+                if (!handleLink) return;
+
+                const handle = handleLink.getAttribute("href")
+                    .replace("/@", "")
+                    .split("/")[0];
+                if (!handle || handle.length == 0) return;
+
+                results.push({
+                    element: el,
+                    name: handle,
+                    domain: "youtube",
+                    size: 20
+                });
+            });
+            
+            // Shorts
+            document.querySelectorAll('.ytReelChannelBarViewModelChannelName').forEach(el => {
+                if (!el || el.dataset.sanndex) return;
+                el.dataset.sanndex = "true";
+
+                const handleLink = el.querySelector('a[href^="/"]');
+                if (!handleLink) return;
+
+                const handle = handleLink.getAttribute("href")
                     .replace("/@", "")
                     .split("/")[0];
                 if (!handle || handle.length == 0) return;

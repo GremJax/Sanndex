@@ -292,17 +292,15 @@ const observer = new MutationObserver(() => {
         if (result) {
 
             fetch(`https://sanndex.org/source?domain=${result.domain.toLowerCase()}/${result.name.toLowerCase()}`)
-            .then(res => {
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                return res.json()
-            })
+            .then(res => res.json())
             .then(data => {
+                if (!data || data.error) {
+                    insertBadge(result.element, result.size, null, result.name, 0);
+                    console.log(`No review for ${result.name}`);
+                    return
+                }
                 insertBadge(result.element, result.size, data.review, data.source.name, data.score);
             })
-            .catch(err => {
-                insertBadge(result.element, result.size, null, result.name, 0);
-                console.error(`Sanndex fetch error for ${result.name}:`, err);
-            });
         }
     })
     

@@ -5,21 +5,33 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-    <a href="/">Homepage</a>
-    <h1 id="title">About</h1>
-    
-    <div>
-      <a id="githubLink" href="https://github.com/GremJax/Sanndex">Github</a>
+    <div data-template="header.html"></div>
+
+    <div class="main-layout">
+        <div data-template="sidebar-left.html"></div>
+
+        <main class="content">  
+            <h1 id="title">About</h1>
+            
+            <div>
+            <a id="githubLink" href="https://github.com/GremJax/Sanndex">Github</a>
+            </div>
+            
+            <div id="readme">Could not fetch readme :(</div>
+            <script>
+                fetch("https://raw.githubusercontent.com/GremJax/Sanndex/main/README.md")
+                .then(res => res.text())
+                .then(md => {
+                    document.getElementById("readme").innerText = marked.parse(md);
+                })
+            </script>
+        </main>
+
+        <div data-template="sidebar-right.html"></div>
     </div>
-    
-    <div id="readme">Could not fetch readme :(</div>
-    <script>
-        fetch("https://raw.githubusercontent.com/GremJax/Sanndex/main/README.md")
-        .then(res => res.text())
-        .then(md => {
-            document.getElementById("readme").innerText = marked.parse(md);
-        })
-    </script>
-    
+
+    <div data-template="footer.html"></div>
+
+    <script src="/js/templateLoader.js"></script>
 </body>
 </html>

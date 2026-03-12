@@ -6,12 +6,23 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-    <div id="header"></div>
-    <script src="/js/headerLoader.js"></script>
+    <div data-template="header.html"></div>
 
-    <h1 id="title">Review Title</h1>
-    <p id="totalScore">No score</h1>
+    <div class="main-layout">
+        <div data-template="sidebar-left.html"></div>
 
-    <script src="/js/review.js"></script>
+        <main class="content">  
+            <h1 id="title">Review Title</h1>
+            <p id="totalScore">No score</h1>
+
+            <script src="/js/review.js"></script>
+        </main>
+
+        <div data-template="sidebar-right.html"></div>
+    </div>
+
+    <div data-template="footer.html"></div>
+
+    <script src="/js/templateLoader.js"></script>
 </body>
 </html>

@@ -5,11 +5,21 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-    <div id="header"></div>
-    <script src="/js/headerLoader.js"></script>
+    <div data-template="header.html"></div>
 
-    <h1 class="title">Login</h1>
+    <div class="main-layout">
+        <div data-template="sidebar-left.html"></div>
 
-    <a href="/auth/google">Sign in with Google</a>
+        <main class="content">  
+            <h1 class="title">Login</h1>
+            <a href="/auth/google">Sign in with Google</a>
+        </main>
+
+        <div data-template="sidebar-right.html"></div>
+    </div>
+
+    <div data-template="footer.html"></div>
+
+    <script src="/js/templateLoader.js"></script>
 </body>
 </html>

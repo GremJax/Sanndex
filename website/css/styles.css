@@ -1,10 +1,12 @@
 body {
   margin: 0;
   font-family: Helvetica, Arial, sans-serif;
+  background: #111;
+  color: #eee;
 }
 
 .site-header {
-  background-color: #1f2933;
+  background-color: #be1e5a;
   color: white;
   padding: 16px 24px;
   display: flex;
@@ -20,4 +22,27 @@ body {
 
 .site-header a:hover {
   text-decoration: underline;
+}
+
+.main-layout {
+  display: flex;
+  min-height: calc(100vh - 140px);
+}
+
+.sidebar {
+  width: 120px;
+  background: #1c1c1c;
+}
+
+.content {
+  flex: 1;
+  padding: 30px;
+  background: #222;
+}
+
+.site-footer {
+  background: #1f2933;
+  color: white;
+  text-align: center;
+  padding: 20px;
 }

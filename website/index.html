@@ -5,21 +5,30 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-    <div id="header"></div>
-    <script src="/js/headerLoader.js"></script>
+    <div data-template="header.html"></div>
 
-    <h1 id="title">Sanndex</h1>
+    <div class="main-layout">
+        <div data-template="sidebar-left.html"></div>
 
-    <div>
-      <a id="dashboardLink" href="/dashboard">Dashboard</a>
+        <main class="content">  
+            <div>
+              <a id="dashboardLink" href="/dashboard">Dashboard</a>
+            </div>
+
+            <div>
+              <a id="loginLink" href="/login">Login</a>
+            </div>
+
+            <div>
+              <a id="aboutLink" href="/about">About</a>
+            </div>
+        </main>
+
+        <div data-template="sidebar-right.html"></div>
     </div>
 
-    <div>
-      <a id="loginLink" href="/login">Login</a>
-    </div>
+    <div data-template="footer.html"></div>
 
-    <div>
-      <a id="aboutLink" href="/about">About</a>
-    </div>
+    <script src="/js/templateLoader.js"></script>
 </body>
 </html>

@@ -6,21 +6,32 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-    <div id="header"></div>
-    <script src="/js/headerLoader.js"></script>
+    <div data-template="header.html"></div>
 
-    <h1 id="title">Account Info</h1>
+    <div class="main-layout">
+        <div data-template="sidebar-left.html"></div>
 
-    <p id="permissions">Not logged in</p>
+        <main class="content">  
+            <h1 id="title">Account Info</h1>
 
-    <div>
-        <p id="username">Username</p>
-        <textarea id="changeUsernameTextarea" placeholder="New username..."></textarea>
+            <p id="permissions">Not logged in</p>
+
+            <div>
+                <p id="username">Username</p>
+                <textarea id="changeUsernameTextarea" placeholder="New username..."></textarea>
+            </div>
+
+            <button type="button" id="changeUsernameButton">Change Username</button>
+            <button type="button" id="logoutButton">Logout</button>
+            
+            <script src="/js/account.js"></script>
+        </main>
+
+        <div data-template="sidebar-right.html"></div>
     </div>
 
-    <button type="button" id="changeUsernameButton">Change Username</button>
-    <button type="button" id="logoutButton">Logout</button>
-    
-    <script src="/js/account.js"></script>
+    <div data-template="footer.html"></div>
+
+    <script src="/js/templateLoader.js"></script>
 </body>
 </html>

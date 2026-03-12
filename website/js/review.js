@@ -28,6 +28,7 @@ fetch(`/source?domain=${name.toLowerCase()}`)
     })
 
 
-}).catch(() => {
+}).catch(err => {
     content.innerHTML = `<h>No review for ${name}</h>`
+    console.error(err)
 })

@@ -13,6 +13,7 @@ fetch("/me", {credentials:"include"})
     
     document.getElementById("changeUsernameButton").onClick = async () => {
         const newUsername = document.getElementById("changeUsernameTextarea").value;
+        console.log(`Attempting to change username to ${newUsername}`);
 
         await fetch("https://sanndex.org/username", {
             method: "POST",
@@ -24,6 +25,7 @@ fetch("/me", {credentials:"include"})
     }
     
     document.getElementById("logoutButton").onClick = async () => {
+        console.log(`Attempting to logout`);
         await fetch("https://sanndex.org/logout", {
             method: "POST",
             credentials: "include",

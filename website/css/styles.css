@@ -31,17 +31,17 @@ body {
 
 .sidebar {
   width: 120px;
-  background: #1c1c1c;
+  background: #f0bebe;
 }
 
 .content {
   flex: 1;
   padding: 30px;
-  background: #222;
+  background: #f0f0f0ff;
 }
 
 .site-footer {
-  background: #1f2933;
+  background: #be1e5a;
   color: white;
   text-align: center;
   padding: 20px;

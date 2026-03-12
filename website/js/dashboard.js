@@ -2,22 +2,24 @@ fetch("/me", {credentials:"include"})
 .then(res => res.json())
 .then(data => {
 
+    const content = document.querySelector(".content");
+
     if(!data.loggedIn) {
-        document.body.innerHTML += `<a href = "https://sanndex.org/login">Go to login</a>`
+        content.innerHTML += `<a href = "https://sanndex.org/login">Go to login</a>`
         return
     }
 
-    document.body.innerHTML += `<p>Hello ${data.user.username}</p>`
-    document.body.innerHTML += `<a href = "https://sanndex.org/account">Account info</a>`
+    content.innerHTML += `<p>Hello ${data.user.username}</p>`
+    content.innerHTML += `<a href = "https://sanndex.org/account">Account info</a>`
 
     fetch(`/reports?userId=${data.user.id}`)
     .then(res => res.json())
     .then(data => {
         
-        document.body.innerHTML += `<p>All reports:</p>`;
+        content.innerHTML += `<p>All reports:</p>`;
 
         data.forEach(report => {
-            document.body.innerHTML += `<p>${report}</p>`;
+            content.innerHTML += `<p>${report}</p>`;
         })
     
     })

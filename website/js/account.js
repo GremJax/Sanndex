@@ -1,9 +1,10 @@
 fetch("/me", {credentials:"include"})
 .then(res => res.json())
 .then(data => {
+    const content = document.querySelector(".content");
 
     if(!data.loggedIn) {
-        document.body.innerHTML += `<a href = "https://sanndex.org/login">Go to login</a>`
+        content.innerHTML = `<a href = "https://sanndex.org/login">Go to login</a>`
         return
     }
 

@@ -1,6 +1,6 @@
 const parts = window.location.pathname.split("/");
 
-const name = parts[2];
+const name = parts[2].trim();
 
 fetch(`/source?domain=${name.toLowerCase()}`)
 .then(res => {

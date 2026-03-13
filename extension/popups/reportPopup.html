@@ -1,10 +1,17 @@
-<div class="sanndex-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:999999;">
-  <div class="sanndex-popup" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-       background:white;padding:20px;border-radius:10px;width:320px;box-shadow:0 5px 20px rgba(0,0,0,0.3);font-family:Arial;">
-    <button class="back">Back</button>
-    <h2 class="title">Report</h2>
-    <p class="userLabel">You are not logged in</p>
+<div class="sanndex-popup" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+      background:white;padding:20px;border-radius:10px;width:320px;box-shadow:0 5px 20px rgba(0,0,0,0.3);font-family:Arial;">
+  <button class="back">Back</button>
+  <h2 class="title">Report</h2>
+  <div class="userLabel"></div>
 
+  <div>
+    <label for="na">
+      <input type="checkbox" class="na-check">
+      Not a source of information
+    </label>
+  </div>
+
+  <div class="report-sliders">
     <div>
       Accuracy <input type="range" class="accuracy" min="0" max="100" value="50", style="width:100%">
     </div>
@@ -23,8 +30,8 @@
     <div>
       Credibility <input type="range" class="credibility" min="0" max="100" value="50", style="width:100%">
     </div>
-
-    <textarea class="description" placeholder="Describe the issue...", style="width:100%;height:70px"></textarea>
-    <button class="sendReport">Send Report</button>
   </div>
+
+  <textarea class="description" placeholder="Add some context...", style="width:100%;height:70px"></textarea>
+  <button class="sendReport">Send Report</button>
 </div>

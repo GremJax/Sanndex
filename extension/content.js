@@ -54,11 +54,11 @@ function chooseTitle(data, totalScore) {
 // Create and insert badge
 function insertBadge(targetElement, size, data, name, totalScore) {
 
-  const iconName = chooseIcon(data, totalScore);
+  const iconName = chooseIcon(data ? data.review : null, totalScore);
 
   const icon = document.createElement("img");
 
-  icon.title = chooseTitle(data, totalScore);
+  icon.title = chooseTitle(data ? data.review : null, totalScore);
 
   icon.src = chrome.runtime.getURL(`icons/sanndex_${iconName}`);
   icon.style.width = `${size}px`;
@@ -70,6 +70,7 @@ function insertBadge(targetElement, size, data, name, totalScore) {
   icon.onclick = (event) => {
     event.stopPropagation();
     event.preventDefault();
+    openOverlay();
     openSanndexPopup(data, name, event);
   };
 
@@ -81,52 +82,115 @@ async function fetchTemplate(name) {
         .then(res => res.text());
     const wrapper = document.createElement("div");
     wrapper.innerHTML = html;
-    return wrapper.firstElementChild; // overlay div
+    return wrapper.firstElementChild;
+}
+
+const popupWidth = 340;
+const popupHeight = 220;
+
+async function reportPopupWaitForLogin(label) {
+
+    const handler = async () => {
+        fetch("https://sanndex.org/me", { credentials: "include" })
+        .then(res => res.json())
+        .then(me => {
+            if (me.loggedIn) {
+                label.innerHTML = `<p>You are logged in as ${me.user.username}</p>`;
+                window.removeEventListener("focus", handler);
+            }
+        })
+    }
+
+    window.addEventListener("focus", handler);
 }
 
 async function openReportPopup(data, name, event) {
-    const overlay = await fetchTemplate("reportPopup");
+    const popup = await fetchTemplate("reportPopup");
+    const overlay = document.querySelector(".sanndex-overlay");
 
-    const x = Math.min(event.clientX, window.innerWidth - 340);
-    const y = Math.min(event.clientY, window.innerHeight - 220);
+    const x = Math.max(popupWidth, Math.min(event.clientX, window.innerWidth - popupWidth));
+    const y = Math.max(popupHeight, Math.min(event.clientY, window.innerHeight - popupHeight));
 
-    const popup = overlay.querySelector(".sanndex-popup");
     popup.style.position = "fixed";
     popup.style.left = `${x}px`;
     popup.style.top = `${y}px`;
     popup.style.transform = "translate(-50%, -50%)";
 
     // Inject title
-    overlay.querySelector(".title").textContent = `Report ${name}`;
+    popup.querySelector(".title").textContent = `Report ${name}`;
 
-    overlay.querySelector(".back").onclick = () => {
-        overlay.remove();
+    popup.querySelector(".back").onclick = () => {
+        popup.remove();
         openSanndexPopup(data, name, event);
     };
 
     // User info
     fetch("https://sanndex.org/me", { credentials: "include" })
     .then(res => res.json())
-    .then(data => {
-        if (!data.loggedIn) {
-            overlay.querySelector(".userLabel").textContent = "You are not logged in";
+    .then(me => {
+        if (!me.loggedIn) {
+            const label = popup.querySelector(".userLabel");
+
+            label.innerHTML = '<p>You are not logged in. </p><a class = login-link href="https://sanndex.org/login" target = "_blank" rel="noopener noreferrer">Log in</a>'
+            popup.querySelector(".login-link").onclick = reportPopupWaitForLogin(label);
             return;
         }
         
-        overlay.querySelector(".userLabel").textContent = `You are logged in as ${data.user.username}`;
+        popup.querySelector(".userLabel").innerHTML = `<p>You are logged in as ${me.user.username}</p>`;
     });
 
-    overlay.querySelector(".sendReport").onclick = async () => {
+    const naCheck = popup.querySelector(".na-check");
+    const sliders = popup.querySelector(".report-sliders");
+    naCheck.onclick = () => {
+        if(naCheck.checked) {
+            sliders.style.display = "none";
+        } else {
+            sliders.style.display = "block";
+        }
+    }
+
+    popup.querySelector(".sendReport").onclick = async () => {
+        let sourceId = null;
+        if (data) sourceId = data.source.id;
+
+        if (!sourceId) {
+            // Add new source
+            const source = {
+                name: name, 
+                domain: `${domain.toLowerCase()}/${name.toLowerCase()}`
+            }
+
+            await fetch("https://sanndex.org/new-source", {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(source)
+            });
+
+            // Get id
+            await fetch(`https://sanndex.org/source?domain=${name}`)
+            .then(res => res.json())
+            .then(data => {
+                sourceId = data.source.id
+            })
+        }
+
+        if (!sourceId) {
+            console.error("Source id still not found after creation");
+            return
+        }
+
         const payload = {
-            sourceId: data.source_id,
+            sourceId: sourceId,
             url: window.location.href,
-            description: overlay.querySelector(".description").value,
-            accuracy_score: overlay.querySelector(".accuracy").value,
-            transparency_score: overlay.querySelector(".transparency").value,
-            integrity_score: overlay.querySelector(".integrity").value,
-            manipulation_score: overlay.querySelector(".manipulation").value,
-            authenticity_score: overlay.querySelector(".authenticity").value,
-            credibility_score: overlay.querySelector(".credibility").value,
+            na: naCheck.checked,
+            description: popup.querySelector(".description").value,
+            accuracy_score: popup.querySelector(".accuracy").value,
+            transparency_score: popup.querySelector(".transparency").value,
+            integrity_score: popup.querySelector(".integrity").value,
+            manipulation_score: popup.querySelector(".manipulation").value,
+            authenticity_score: popup.querySelector(".authenticity").value,
+            credibility_score: popup.querySelector(".credibility").value,
         };
         await fetch("https://sanndex.org/report", {
             method: "POST",
@@ -137,35 +201,41 @@ async function openReportPopup(data, name, event) {
         overlay.remove();
     };
 
-    document.body.appendChild(overlay);
+    overlay.appendChild(popup);
 }
 
 async function openSanndexPopup(data, name, event) {
-    const overlay = await fetchTemplate("reviewPopup");
+    const popup = await fetchTemplate("reviewPopup");
+    const overlay = document.querySelector(".sanndex-overlay");
 
     // Position near mouse
-    const x = Math.min(event.clientX, window.innerWidth - 340);
-    const y = Math.min(event.clientY, window.innerHeight - 220);
+    const x = Math.max(popupWidth, Math.min(event.clientX, window.innerWidth - popupWidth));
+    const y = Math.max(popupHeight, Math.min(event.clientY, window.innerHeight - popupHeight));
 
-    const popup = overlay.querySelector(".sanndex-popup");
     popup.style.position = "fixed";
     popup.style.left = `${x}px`;
     popup.style.top = `${y}px`;
     popup.style.transform = "translate(-50%, -50%)";
 
     // Inject data
-    overlay.querySelector(".title").textContent = `${name}'s Sanndex Review`;
-    overlay.querySelector(".score").textContent = data ? `Score: ${data.accuracy_score}` : "No rating yet";
+    popup.querySelector(".title").textContent = `${name}'s Sanndex Review`;
+    popup.querySelector(".score").textContent = data && data.review ? `Score: ${data.review}` : "No rating yet";
 
     // Event handlers
-    overlay.querySelector(".close").onclick = () => overlay.remove();
-    overlay.querySelector(".viewFull").onclick = () => window.open(`https://sanndex.org/review/${name}`, "_blank");
-    overlay.querySelector(".reportSource").onclick = () => {
-        overlay.remove();
+    popup.querySelector(".close").onclick = () => overlay.remove();
+    popup.querySelector(".viewFull").onclick = () => window.open(`https://sanndex.org/review/${name}`, "_blank");
+    popup.querySelector(".reportSource").onclick = () => {
+        popup.remove();
         openReportPopup(data, name, event);
     };
 
-    document.body.appendChild(overlay);
+    overlay.appendChild(popup);
+}
+
+async function openOverlay(){
+    const overlay = await fetchTemplate("overlay")
+    document.body.appendChild(overlay)
+    return overlay
 }
 
 // Domain-specific logic for finding the name element
@@ -187,7 +257,7 @@ function findNameElements() {
                 results.push({
                     element: channelHeader,
                     name: handle,
-                    domain: "youtube",
+                    domain: "youtube.com",
                     size: 32
                 });
             }
@@ -199,7 +269,7 @@ function findNameElements() {
                 results.push({
                     element: videoChannel,
                     name: videoChannel.textContent.replace("@","").trim(),
-                    domain: "youtube",
+                    domain: "youtube.com",
                     size: 20
                 });
             }
@@ -220,7 +290,7 @@ function findNameElements() {
                 results.push({
                     element: el,
                     name: handle,
-                    domain: "youtube",
+                    domain: "youtube.com",
                     size: 20
                 });
             });
@@ -241,7 +311,7 @@ function findNameElements() {
                 results.push({
                     element: el,
                     name: handle,
-                    domain: "youtube",
+                    domain: "youtube.com",
                     size: 20
                 });
             });
@@ -267,7 +337,7 @@ function findNameElements() {
                 results.push({
                     element: el,
                     name: handle,
-                    domain: "x",
+                    domain: "x.com",
                     size: 20
                 });
             });
@@ -284,24 +354,37 @@ function findNameElements() {
     return results;
 }
 
+async function getSource(result) {
+    try {
+        let res = await fetch(`https://sanndex.org/source?domain=${result.domain.toLowerCase()}/${result.name.toLowerCase()}`);
+
+        if (!res.ok) {
+            res = await fetch(`https://sanndex.org/source?domain=${result.name.toLowerCase()}`);
+            if (!res.ok) return null;
+        }
+
+        return await res.json();
+    } catch (err) {
+        return null;
+    }
+}
+
 // Watch for dynamic content
 const observer = new MutationObserver(() => {
     const results = findNameElements();
 
-    results.forEach(result => {
-        if (result) {
+    results.forEach(async result => {
+        if (!result) return
 
-            fetch(`https://sanndex.org/source?domain=${result.domain.toLowerCase()}/${result.name.toLowerCase()}`)
-            .then(res => res.json())
-            .then(data => {
-                if (!data || data.error) {
-                    insertBadge(result.element, result.size, null, result.name, 0);
-                    console.log(`No review for ${result.name}`);
-                    return
-                }
-                insertBadge(result.element, result.size, data.review, data.source.name, data.score);
-            })
+        const data = await getSource(result);
+
+        if (!data || data.error) {
+            insertBadge(result.element, result.size, null, result.name, 0);
+            console.log(`No review for ${result.name}`);
+            return
         }
+        insertBadge(result.element, result.size, data, data.source.name, data.score);
+        
     })
     
 });

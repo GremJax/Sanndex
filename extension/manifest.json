@@ -16,7 +16,8 @@
       "resources": [
         "icons/*.svg",
         "popups/reportPopup.html",
-        "popups/reviewPopup.html"
+        "popups/reviewPopup.html",
+        "popups/overlay.html"
     ],
       "matches": ["<all_urls>"]
     }

@@ -32,7 +32,7 @@ fetch("/me", {credentials:"include"})
             })
 
             const reportString = `[${report.created_at}]: Reported ${sourceName}, description: ${report.description}`;
-            content.innerHTML += `<p>${reportString}</p><a href=${report.url}>Evidence</a>`;
+            content.innerHTML += `<p>${reportString}</p><a href=${report.evidence_url}>Evidence</a>`;
         })
     
     })

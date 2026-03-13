@@ -14,7 +14,7 @@ VALUES (1, 1, 'changed accuracy to 20', 'test');
 INSERT INTO sources (id, name, verification_status) 
 VALUES (2, 'nuxanor', 'unverified');
 INSERT INTO source_domains (source_id, domain) 
-VALUES (2, 'youtube/nuxanor');
+VALUES (2, 'youtube.com/nuxanor');
 
 INSERT INTO reviews (id, source_id, status, 
     accuracy_score,

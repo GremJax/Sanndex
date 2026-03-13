@@ -1,1 +1,2 @@
 ALTER TABLE users ADD permission TEXT DEFAULT 'user';
+ALTER TABLE reports ADD na BOOLEAN DEFAULT FALSE;

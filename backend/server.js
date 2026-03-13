@@ -396,7 +396,7 @@ app.get("/source", async (req, res) => {
 app.post("/report", async (req, res) => {
   console.log("REPORT BODY:", req.body);
 
-  const { sourceId, url, description, 
+  const { sourceId, url, na, description, 
     accuracy_score,
     transparency_score,
     integrity_score,
@@ -405,7 +405,7 @@ app.post("/report", async (req, res) => {
     credibility_score 
   } = req.body;
 
-  if (!sourceId ||
+  if (!sourceId || !na,
     !accuracy_score ||
     !transparency_score ||
     !integrity_score ||
@@ -419,7 +419,7 @@ app.post("/report", async (req, res) => {
 
   await pool.query(
     `INSERT INTO reports
-      (source_id, user_id, evidence_url, description, 
+      (source_id, user_id, evidence_url, na, description, 
       accuracy_score,
       transparency_score,
       integrity_score,
@@ -427,7 +427,8 @@ app.post("/report", async (req, res) => {
       authenticity_score,
       credibility_score)
     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
-    [sourceId, userId, url, description, 
+    [sourceId, userId, url, na,
+      description, 
       accuracy_score,
       transparency_score,
       integrity_score,
@@ -438,6 +439,19 @@ app.post("/report", async (req, res) => {
   );
 
   res.json({ success: true });
+});
+
+// New source
+app.post("/new-source", async (req, res) => {
+  const { name, domain } = req.body;
+
+  if (!name || !domain) {
+    return res.status(400).json({ error: "Missing name or domain" });
+  }
+
+  const id = insertSourceWithDomain(name, domain);
+
+  res.json({ success: true, id: id });
 });
 
 // page routes

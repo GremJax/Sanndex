@@ -191,6 +191,7 @@ async function openReportPopup(data, name, event) {
             manipulation_score: popup.querySelector(".manipulation").value,
             authenticity_score: popup.querySelector(".authenticity").value,
             credibility_score: popup.querySelector(".credibility").value,
+            captcha: document.querySelector('[name="cf-turnstile-response"]').value
         };
         await fetch("https://sanndex.org/report", {
             method: "POST",

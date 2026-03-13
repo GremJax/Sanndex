@@ -402,10 +402,11 @@ app.post("/report", async (req, res) => {
     integrity_score,
     manipulation_score,
     authenticity_score,
-    credibility_score 
+    credibility_score ,
+    captcha
   } = req.body;
 
-  if (!sourceId || !na,
+  if (!sourceId || !na || !captcha ||
     !accuracy_score ||
     !transparency_score ||
     !integrity_score ||
@@ -415,6 +416,26 @@ app.post("/report", async (req, res) => {
     return res.status(400).json({ error: "Missing fields" });
   }
 
+  // Captcha
+  const response = await fetch(
+    "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        secret: process.env.TURNSTILE_SECRET,
+        response: captcha
+      })
+    }
+  );
+
+  const captchaData = await response.json();
+
+  if (!captchaData.success) {
+    return res.status(403).json({error: "Captcha failed"});
+  }
+
+  // SQL Query
   const userId = req.user ? req.user.id : null;
 
   await pool.query(
@@ -434,7 +455,7 @@ app.post("/report", async (req, res) => {
       integrity_score,
       manipulation_score,
       authenticity_score,
-      credibility_score 
+      credibility_score
     ]
   );
 
